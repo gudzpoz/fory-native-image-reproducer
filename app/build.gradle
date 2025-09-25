@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.fory:fory-core:0.11.2'
+    implementation 'org.apache.fory:fory-core:0.12.3'
 }
 
 java {
@@ -31,6 +31,7 @@ graalvmNative {
             quickBuild = true
             verbose = true
             buildArgs.add('--initialize-at-build-time=org.example.App')
+            buildArgs.add('--initialize-at-build-time=org.apache.fory')
         }
     }
 }
