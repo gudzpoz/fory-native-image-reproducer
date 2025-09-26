@@ -1,6 +1,8 @@
 package org.example;
 
 import org.apache.fory.Fory;
+import org.apache.fory.memory.MemoryBuffer;
+import org.apache.fory.serializer.Serializer;
 
 public class App {
     private static final Fory FORY = Fory.builder()
@@ -9,11 +11,12 @@ public class App {
             .build();
 
     static {
-        FORY.register(AppInnerImpl.class, true);
+        FORY.registerSerializer(Custom.class, new CustomSerializer(FORY));
         FORY.register(App.class, true);
+        FORY.ensureSerializersCompiled();
     }
 
-    AppInner inner = new AppInnerImpl("test");
+    private final Custom inner = new Custom(1);
 
     public static void main(String[] args) {
         FORY.reset();
@@ -21,25 +24,21 @@ public class App {
         byte[] bytes = FORY.serialize(from);
         FORY.reset();
         App to = (App) FORY.deserialize(bytes);
-        assert to.inner.toString().equals("test");
+        assert to.inner.i() == 42;
     }
 
-    private static abstract class AppInner {
-        private final String s;
-
-        AppInner(String s) {
-            this.s = s;
+    private record Custom(int i) {
+    }
+    private static final class CustomSerializer extends Serializer<Custom> {
+        public CustomSerializer(Fory fory) {
+            super(fory, Custom.class);
         }
-
         @Override
-        public String toString() {
-            return s;
+        public void write(MemoryBuffer buffer, Custom value) {
         }
-    }
-
-    private static class AppInnerImpl extends AppInner {
-        AppInnerImpl(String s) {
-            super(s);
+        @Override
+        public Custom read(MemoryBuffer buffer) {
+            return new Custom(42);
         }
     }
 }
