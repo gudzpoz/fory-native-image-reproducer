@@ -5,10 +5,16 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven {
+        url = "https://repository.apache.org/content/repositories/snapshots/"
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
 }
 
 dependencies {
-    implementation 'org.apache.fory:fory-core:0.12.3'
+    implementation 'org.apache.fory:fory-core:0.13.0-SNAPSHOT'
 }
 
 java {
