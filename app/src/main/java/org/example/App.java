@@ -1,8 +1,8 @@
 package org.example;
 
 import org.apache.fory.Fory;
-import org.apache.fory.memory.MemoryBuffer;
-import org.apache.fory.serializer.Serializer;
+
+import java.util.Objects;
 
 public class App {
     private static final Fory FORY = Fory.builder()
@@ -11,12 +11,20 @@ public class App {
             .build();
 
     static {
-        FORY.registerSerializer(Custom.class, new CustomSerializer(FORY));
+        FORY.register(Custom1.class, true);
+        FORY.register(Custom2.class, true);
         FORY.register(App.class, true);
         FORY.ensureSerializersCompiled();
     }
 
-    private final Custom inner = new Custom(1);
+    private final Custom1 inner = new Custom1(42);
+    private final Custom2 field = new Custom2(43);
+
+    public static void assertEquals(Object a, Object b) {
+        if (!Objects.equals(a, b)) {
+            new AssertionError(a + " != " + b).printStackTrace(System.out);
+        }
+    }
 
     public static void main(String[] args) {
         FORY.reset();
@@ -24,21 +32,16 @@ public class App {
         byte[] bytes = FORY.serialize(from);
         FORY.reset();
         App to = (App) FORY.deserialize(bytes);
-        assert to.inner.i() == 42;
+        assertEquals(from.inner.i, to.inner.i);
+        assertEquals(from.field.i, to.field.i);
     }
 
-    private record Custom(int i) {
+    private record Custom1(int i) {
     }
-    private static final class CustomSerializer extends Serializer<Custom> {
-        public CustomSerializer(Fory fory) {
-            super(fory, Custom.class);
-        }
-        @Override
-        public void write(MemoryBuffer buffer, Custom value) {
-        }
-        @Override
-        public Custom read(MemoryBuffer buffer) {
-            return new Custom(42);
+    private static final class Custom2 {
+        final int i;
+        Custom2(int i) {
+            this.i = i;
         }
     }
 }
