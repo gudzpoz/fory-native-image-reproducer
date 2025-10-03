@@ -11,13 +11,12 @@ public class App {
             .build();
 
     static {
-        FORY.register(MyEnum.IMPL.getClass());
-        FORY.register(MyEnum.class);
+        FORY.register(ConcreteClass.class);
         FORY.register(App.class);
         FORY.ensureSerializersCompiled();
     }
 
-    MyEnum myEnum = MyEnum.IMPL;
+    AbstractClass abstractClass = new ConcreteClass(42);
 
     public static void assertEquals(Object a, Object b) {
         if (!Objects.equals(a, b)) {
@@ -31,17 +30,22 @@ public class App {
         byte[] bytes = FORY.serialize(from);
         FORY.reset();
         App to = (App) FORY.deserialize(bytes);
-        assertEquals(42, to.myEnum.i());
+        assertEquals(42, to.abstractClass.i);
     }
 
-    public enum MyEnum {
-        IMPL {
-            @Override
-            public int i() {
-                return 42;
-            }
-        };
-
-        public abstract int i();
+    public abstract static class AbstractClass {
+        final int i;
+        protected AbstractClass(int i) {
+            this.i = i;
+        }
+    }
+    private static class ConcreteClass extends AbstractClass {
+        private ConcreteClass(int i) {
+            super(i);
+        }
+        // The following works:
+//        private ConcreteClass(int i, int j, int k) {
+//            super(i, j, k);
+//        }
     }
 }
