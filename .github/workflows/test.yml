@@ -26,4 +26,8 @@ jobs:
           ./gradlew build
           ./gradlew nativeCompile
       - name: Test
-        run: ./app/build/native/nativeCompile/test || true
+        run: |
+          echo "####### Normal Run #######"
+          ./gradlew app:run
+          echo "####### Native Image Run #######"
+          ./app/build/native/nativeCompile/test || true

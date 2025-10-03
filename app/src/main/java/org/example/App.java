@@ -11,14 +11,13 @@ public class App {
             .build();
 
     static {
-        FORY.register(ConcreteObject.class);
-        // The following commented-out line will result in a different error:
-        //     AbstractObject doesn't support serialization
-        //FORY.register(AbstractObject.class);
-        FORY.register(AbstractObject[].class);
+        FORY.register(MyEnum.IMPL.getClass());
+        FORY.register(MyEnum.class);
         FORY.register(App.class);
         FORY.ensureSerializersCompiled();
     }
+
+    MyEnum myEnum = MyEnum.IMPL;
 
     public static void assertEquals(Object a, Object b) {
         if (!Objects.equals(a, b)) {
@@ -26,29 +25,23 @@ public class App {
         }
     }
 
-    AbstractObject[] objects = new ConcreteObject[]{new ConcreteObject()};
-
     public static void main(String[] args) {
-        try {
-            FORY.reset();
-            App from = new App();
-            byte[] bytes = FORY.serialize(from);
-            FORY.reset();
-            App to = (App) FORY.deserialize(bytes);
-            assertEquals(from.objects[0].i(), to.objects[0].i());
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
+        FORY.reset();
+        App from = new App();
+        byte[] bytes = FORY.serialize(from);
+        FORY.reset();
+        App to = (App) FORY.deserialize(bytes);
+        assertEquals(42, to.myEnum.i());
     }
 
-    public abstract static class AbstractObject {
+    public enum MyEnum {
+        IMPL {
+            @Override
+            public int i() {
+                return 42;
+            }
+        };
+
         public abstract int i();
-    }
-    public static class ConcreteObject extends AbstractObject {
-        public int i = 42;
-        @Override
-        public int i() {
-            return i;
-        }
     }
 }
