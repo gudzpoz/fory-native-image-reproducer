@@ -11,14 +11,14 @@ public class App {
             .build();
 
     static {
-        FORY.register(Custom1.class, true);
-        FORY.register(Custom2.class, true);
-        FORY.register(App.class, true);
+        FORY.register(ConcreteObject.class);
+        // The following commented-out line will result in a different error:
+        //     AbstractObject doesn't support serialization
+        //FORY.register(AbstractObject.class);
+        FORY.register(AbstractObject[].class);
+        FORY.register(App.class);
         FORY.ensureSerializersCompiled();
     }
-
-    private final Custom1 inner = new Custom1(42);
-    private final Custom2 field = new Custom2(43);
 
     public static void assertEquals(Object a, Object b) {
         if (!Objects.equals(a, b)) {
@@ -26,22 +26,29 @@ public class App {
         }
     }
 
+    AbstractObject[] objects = new ConcreteObject[]{new ConcreteObject()};
+
     public static void main(String[] args) {
-        FORY.reset();
-        App from = new App();
-        byte[] bytes = FORY.serialize(from);
-        FORY.reset();
-        App to = (App) FORY.deserialize(bytes);
-        assertEquals(from.inner.i, to.inner.i);
-        assertEquals(from.field.i, to.field.i);
+        try {
+            FORY.reset();
+            App from = new App();
+            byte[] bytes = FORY.serialize(from);
+            FORY.reset();
+            App to = (App) FORY.deserialize(bytes);
+            assertEquals(from.objects[0].i(), to.objects[0].i());
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
     }
 
-    private record Custom1(int i) {
+    public abstract static class AbstractObject {
+        public abstract int i();
     }
-    private static final class Custom2 {
-        final int i;
-        Custom2(int i) {
-            this.i = i;
+    public static class ConcreteObject extends AbstractObject {
+        public int i = 42;
+        @Override
+        public int i() {
+            return i;
         }
     }
 }
